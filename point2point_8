@@ -9,6 +9,7 @@ $ns flush-trace
 close $tracefile
 close $namfile
 exec nam s1.nam & 
+exec awk -f s1.awk s1.tr & 
 exit 0 
 }
 set n0 [$ns node]
@@ -17,7 +18,7 @@ set n2 [$ns node]
 $n0 label "TCPSource"
 $n2 label "TCPSink"
 $ns color 1 red
-$ns duplex-link $n0 $n1 1Mb 10ms DropTail
+$ns duplex-link $n0 $n1 2Mb 10ms DropTail
 $ns duplex-link $n1 $n2 1Mb 10ms DropTail
 $ns queue-limit $n1 $n2 5
 set tcp [new Agent/TCP]
@@ -32,3 +33,17 @@ $ns at 0.2 "$ftp start"
 $ns at 2.5 "$ftp stop"
 $ns at 3.0 "finish"
 $ns run
+
+
+------------- s1.awk
+BEGIN{
+	count == 0;
+}
+{
+	event = $1;
+	if(event == "d"){count++;}
+}
+
+END{
+	printf("\nNumber of packets dropped is: %d\n",count);
+}
